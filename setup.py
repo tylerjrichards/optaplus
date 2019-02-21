@@ -1,13 +1,23 @@
 from setuptools import setup
+import pathlib
 
-setup(name='soccer_package',
-      version='0.1',
-      description='A package for soccer functions',
-      url='http://github.com/tylerjrichards',
-      author='Tyler Richards',
+# The directory containing this file
+HERE = pathlib.Path(__file__).parent
+
+# The text of the README file
+README = (HERE / "README.md")
+
+setup(name='optaplus',
+      version='0.11',
+      description='Optaplus package is a range of functions to act as helping hands for people working with Opta and Tracab data.',
+      author='Joe Mulberry, Tyler Richards',
       author_email='tylerjrichards@gmail.com',
+      # The directory containing this file
+      long_description=README,
+      long_description_content_type="text/markdown",
+      url="https://github.com/tylerjrichards/optaplus",
       license='MIT',
-      packages=['soccer_package'],
+      packages=['optaplus'],
       install_requires=[
           'elementpath',
           'pandas',
