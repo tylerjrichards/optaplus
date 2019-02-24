@@ -4,18 +4,16 @@ import pandas as pd
 
 import numpy as np
 
-
 def add_attacking_direction(eventsDF, tdatDF, playersDBDF, tMetaDF):
 
     attacking_directions = dict()
 
-    home_gk = playersDBDF.loc[(playersDBDF['position'] == "Goalkeeper")].loc[
-        0]['jersey_no']
+    home_gk = playersDBDF.loc[(playersDBDF['position'] == "Goalkeeper")].loc[0]['jersey_no']
 
     gk_starting_position = tdatDF.loc[(tdat['frameID'] == tMetaDF['period1_start']) &
-                                      (tdatDF['team'] == 1) &
-                                      (tdatDF['jersey_no'] == int(home_gk))
-                                      ]['x']
+            (tdatDF['team'] == 1) &
+            (tdatDF['jersey_no'] == int(home_gk))
+            ]['x']
 
     if int(gk_starting_position) > 0:
 
@@ -31,15 +29,15 @@ def add_attacking_direction(eventsDF, tdatDF, playersDBDF, tMetaDF):
         attacking_directions['team1_period2'] = 1
         attacking_directions['team0_period2'] = -1
 
+
     if tMetaDF['period3_end'] != 0:
 
-        home_gk = playersDBDF.loc[(playersDBDF['position'] == "Goalkeeper")].loc[
-            0]['jersey_no']
+        home_gk = playersDBDF.loc[(playersDBDF['position'] == "Goalkeeper")].loc[0]['jersey_no']
 
         gk_starting_position = tdatDF.loc[(tdatDF['frameID'] == tMetaDF['period3_start']) &
-                                          (tdatDF['team'] == 1) &
-                                          (tdatDF['jersey_no'] == int(home_gk))
-                                          ]['x']
+                (tdatDF['team'] == 1) &
+                (tdatDF['jersey_no'] == int(home_gk))
+                ]['x']
 
         if int(gk_starting_position) > 0:
 
@@ -62,11 +60,12 @@ def add_attacking_direction(eventsDF, tdatDF, playersDBDF, tMetaDF):
         attacking_directions['team1_period4'] = 0
         attacking_directions['team0_period4'] = 0
 
-    team_reference = playersDBDF[['team_id', 'team']].drop_duplicates()
-    team_reference = team_reference.reset_index(drop=True)
 
-    eventsDF = eventsDF.merge(
-        team_reference, left_on='team_id', right_on='team_id', how="outer")
+    team_reference = playersDBDF[['team_id','team']].drop_duplicates()
+    team_reference = team_reference.reset_index(drop = True)
+
+    eventsDF = eventsDF.merge(team_reference, left_on='team_id', right_on='team_id', how = "outer")
+
 
     eventsDF['attacking_direction'] = 0
 
@@ -77,45 +76,39 @@ def add_attacking_direction(eventsDF, tdatDF, playersDBDF, tMetaDF):
         if ball_to_assess['period_id'] == 1:
 
             if ball_to_assess['team'] == 1:
-                eventsDF.at[i, 'attacking_direction'] = attacking_directions[
-                    'team1_period1']
+                eventsDF.at[i, 'attacking_direction'] = attacking_directions['team1_period1']
 
             elif ball_to_assess['team'] == 0:
-                eventsDF.at[i, 'attacking_direction'] = attacking_directions[
-                    'team0_period1']
+                eventsDF.at[i, 'attacking_direction'] = attacking_directions['team0_period1']
+
 
         if ball_to_assess['period_id'] == 2:
 
             if ball_to_assess['team'] == 1:
-                eventsDF.at[i, 'attacking_direction'] = attacking_directions[
-                    'team1_period2']
+                eventsDF.at[i, 'attacking_direction'] = attacking_directions['team1_period2']
 
             elif ball_to_assess['team'] == 0:
-                eventsDF.at[i, 'attacking_direction'] = attacking_directions[
-                    'team0_period2']
+                eventsDF.at[i, 'attacking_direction'] = attacking_directions['team0_period2']
+
 
         if ball_to_assess['period_id'] == 3:
 
             if ball_to_assess['team'] == 1:
-                eventsDF.at[i, 'attacking_direction'] = attacking_directions[
-                    'team1_period3']
+                eventsDF.at[i, 'attacking_direction'] = attacking_directions['team1_period3']
 
             elif ball_to_assess['team'] == 0:
-                eventsDF.at[i, 'attacking_direction'] = attacking_directions[
-                    'team0_period3']
+                eventsDF.at[i, 'attacking_direction'] = attacking_directions['team0_period3']
+
 
         if ball_to_assess['period_id'] == 4:
 
             if ball_to_assess['team'] == 1:
-                eventsDF.at[i, 'attacking_direction'] = attacking_directions[
-                    'team1_period4']
+                eventsDF.at[i, 'attacking_direction'] = attacking_directions['team1_period4']
 
             elif ball_to_assess['team'] == 0:
-                eventsDF.at[i, 'attacking_direction'] = attacking_directions[
-                    'team0_period4']
+                eventsDF.at[i, 'attacking_direction'] = attacking_directions['team0_period4']
 
     return(eventsDF)
-
 
 def create_playerDB(file_name):
 
@@ -131,6 +124,8 @@ def create_playerDB(file_name):
     # # gameinfo.get('Country')
     # gameinfo = gameinfo.iter('MatchData')
     # gameinfo = gameinfo[0]
+
+
 
     # gameinfo.iter('MatchInfo')
     # root.iter('MatchData').iter('MatchInfo').get('Period')
@@ -148,12 +143,14 @@ def create_playerDB(file_name):
         jersey_no.append(neighbor.get('ShirtNumber'))
         status.append(neighbor.get('Status'))
 
+
     players1 = pd.DataFrame(
         {'formation_place': formation_place,
          'player_id': player_id,
          'position': position,
          'jersey_no': jersey_no,
          'status': status})
+
 
     p_id = []
     first_name = []
@@ -164,22 +161,25 @@ def create_playerDB(file_name):
         first_name.append(neighbor.find('PersonName').find('First').text)
         last_name.append(neighbor.find('PersonName').find('Last').text)
 
+
     players2 = pd.DataFrame(
         {'first_name': first_name,
          'player_id': p_id,
          'last_name': last_name})
 
+
     players1['player_id'] = players1['player_id'].str[1:]
     players2['player_id'] = players2['player_id'].str[1:]
 
     playersDB = players1.merge(players2, on='player_id', how='inner')
-    playersDB["player_name"] = playersDB["first_name"].map(
-        str) + " " + playersDB["last_name"]
+    playersDB["player_name"] = playersDB["first_name"].map(str) + " " + playersDB["last_name"]
+
 
     minute = []
     period_id = []
     player_off = []
     player_on = []
+
 
     for neighbor in gameinfo.iter('Substitution'):
         minute.append(neighbor.get('Time'))
@@ -187,12 +187,14 @@ def create_playerDB(file_name):
         player_off.append(neighbor.get('SubOff'))
         player_on.append(neighbor.get('SubOn'))
 
+
     subs = pd.DataFrame(
         {'minute': minute,
          'period_id': period_id,
          'player_off': player_off,
          'player_on': player_on
-         })
+        })
+
 
     subs['player_off'] = subs['player_off'].str[1:]
     subs['player_on'] = subs['player_on'].str[1:]
@@ -205,15 +207,14 @@ def create_playerDB(file_name):
         if neighbor.get('Type') == "match_time":
             match_length = int(neighbor.text)
 
-    for i in range(0, len(playersDB)):
+    for i in range(0,len(playersDB)):
 
         player_2_test = playersDB.iloc[i]
 
         if player_2_test['status'] == "Start":
 
             if player_2_test['player_id'] in subs.player_off.get_values():
-                playersDB.at[i, 'end_min'] = subs.loc[
-                    subs['player_off'] == player_2_test['player_id']]['minute'].get_values()[0]
+                playersDB.at[i, 'end_min'] = subs.loc[subs['player_off'] == player_2_test['player_id']]['minute'].get_values()[0]
 
             else:
                 playersDB.at[i, 'end_min'] = match_length
@@ -221,15 +222,13 @@ def create_playerDB(file_name):
         if player_2_test['status'] == "Sub":
 
             if player_2_test['player_id'] in subs.player_on.get_values():
-                playersDB.at[i, 'start_min'] = subs.loc[
-                    subs['player_on'] == player_2_test['player_id']]['minute'].get_values()[0]
+                playersDB.at[i, 'start_min'] = subs.loc[subs['player_on'] == player_2_test['player_id']]['minute'].get_values()[0]
                 playersDB.at[i, 'end_min'] = match_length
             else:
                 playersDB.at[i, 'end_min'] = player_2_test['end_min']
 
             if player_2_test['player_id'] in subs.player_off.get_values():
-                playersDB.at[i, 'end_min'] = subs.loc[
-                    subs['player_off'] == player_2_test['player_id']]['minute'].get_values()[0]
+                playersDB.at[i, 'end_min'] = subs.loc[subs['player_off'] == player_2_test['player_id']]['minute'].get_values()[0]
 
     playersDB['mins_played'] = playersDB["end_min"] - playersDB["start_min"]
 
@@ -242,7 +241,8 @@ def create_playerDB(file_name):
     playersDB['team_id'] = ""
     playersDB['team'] = ""
 
-    for i in range(0, 36):
+
+    for i in range(0,36):
         if i <= 17:
             playersDB.at[i, 'team_id'] = teams[0]
             playersDB.at[i, 'team'] = 1
@@ -259,7 +259,7 @@ def parse_f24(file_name):
     tree = ET.parse(file_name)
     root = tree.getroot()
 
-    # get the main game info from the single 'Game' node
+    ## get the main game info from the single 'Game' node
     gameinfo = root.findall('Game')
     gameinfo = gameinfo[0]
     game_id = gameinfo.get('id')
@@ -272,19 +272,19 @@ def parse_f24(file_name):
     season_id = gameinfo.get('season_id')
 
     Edata_columns = ['id',
-                     'event_id',
-                     'type_id',
-                     'period_id',
-                     'min',
-                     'sec',
-                     'outcome',
-                     'player_id',
-                     'team_id',
-                     'x',
-                     'y',
-                     'sequence_id',
-                     'possession_id',
-                     ]
+             'event_id',
+             'type_id',
+             'period_id',
+             'min',
+             'sec',
+             'outcome',
+             'player_id',
+             'team_id',
+             'x',
+             'y',
+             'sequence_id',
+             'possession_id',
+            ]
 
     Q_ids = []
     Q_values = []
@@ -309,7 +309,7 @@ def parse_f24(file_name):
         sequence_id = i.get('sequence_id')
 
         Edata_values = [id_, event_id, type_id, period_id, min_, sec, outcome, player_id, team_id,
-                        x, y, sequence_id, possession_id]
+                        x,y, sequence_id, possession_id]
 
         # find all of the Q information for that file
         Qs = i.findall("./Q")
@@ -327,30 +327,31 @@ def parse_f24(file_name):
         Q_values.append(Q_value)
         Edata.append(Edata_values)
 
-    # Stack all ball Data
-    df = pd.DataFrame(np.vstack(Edata), columns=Edata_columns)
+    #Stack all ball Data
+    df = pd.DataFrame(np.vstack(Edata), columns = Edata_columns)
+
 
     unique_Q_ids = np.unique(np.concatenate(Q_ids))
 
-    # create an array for fast assignments
-    Qarray = np.zeros((df.shape[0], len(unique_Q_ids)))
+    #create an array for fast assignments
+    Qarray = np.zeros((df.shape[0] ,len(unique_Q_ids)))
     Qarray = Qarray.astype('O')
     Qarray[:] = np.nan
 
-    # dict to relate Q_ids to array indices
+    #dict to relate Q_ids to array indices
     keydict = dict(zip(unique_Q_ids, range(len(unique_Q_ids))))
 
-    # iter through all Q_ids, Q_values, assign values to appropriate indices
+    #iter through all Q_ids, Q_values, assign values to appropriate indices
     for idx, (i, v) in enumerate(zip(Q_ids, Q_values)):
         Qarray[idx, [keydict.get(q) for q in Q_ids[idx]]] = Q_values[idx]
 
-    # df from array
-    Qdf = pd.DataFrame(Qarray, columns=unique_Q_ids, index=df.index)
+    #df from array
+    Qdf = pd.DataFrame(Qarray, columns = unique_Q_ids, index = df.index)
 
-    # combine
-    game_df = pd.concat([df, Qdf], axis=1)
+    #combine
+    game_df = pd.concat([df, Qdf], axis = 1)
 
-    # assign game values
+    #assign game values
     game_df['competition_id'] = competition_id
     game_df['game_id'] = game_id
     game_df['home_team_id'] = home_team_id
@@ -362,8 +363,8 @@ def parse_f24(file_name):
     game_df['season_id'] = season_id
     game_df['competition_id'] = competition_id
 
-    game_df[['id', 'period_id', 'min', 'sec', 'outcome']] = \
-        game_df[['id', 'period_id', 'min', 'sec', 'outcome']].astype('int')
+    game_df[['id','period_id','min','sec','outcome']] = \
+                game_df[['id','period_id','min','sec','outcome']].astype('int')
 
     game_df["x"] = pd.to_numeric(game_df["x"])
     game_df["y"] = pd.to_numeric(game_df["y"])
@@ -373,9 +374,9 @@ def parse_f24(file_name):
 
 
 def parse_tracab(tracking_filename,
-                 metadata_filename,
-                 remove_officials=True,
-                 trim_dead_time=True):
+                   metadata_filename,
+                   remove_officials = True,
+                   trim_dead_time = True):
 
     remove_officials = True
     trim_dead_time = True
@@ -399,11 +400,11 @@ def parse_tracab(tracking_filename,
     ball_status = []
     ball_contact = []
 
-    for f in range(0, len(tdat_raw)):
+    for f in range(0,len(tdat_raw)):
 
-        string_items = tdat_raw[f].split(":", 2)
+        string_items = tdat_raw[f].split(":",2)
 
-        # frameID
+        ## frameID
         frameID_temp = int(string_items[0])
 
         # ball
@@ -426,11 +427,11 @@ def parse_tracab(tracking_filename,
         else:
             ball_contact.append("NA")
 
-        # humans
+        ## humans
         humans_raw = string_items[1].split(";")
-        humans_raw = list(filter(None, humans_raw))  # fastest
+        humans_raw = list(filter(None, humans_raw)) # fastest
 
-        for i in range(0, len(humans_raw)):
+        for i in range(0,len(humans_raw)):
 
             human_pieces = humans_raw[i].split(",")
 
@@ -447,16 +448,16 @@ def parse_tracab(tracking_filename,
             ball_status.append(ball_raw[5])
 
     tdat = pd.DataFrame(
-        {'frameID': frameID,
-         'team': team,
-         'target_id': target_id,
-         'jersey_no': jersey_no,
-         'x': x,
-         'y': y,
-         'z': z,
-         'ball_owning_team': ball_owning_team,
-         'ball_status': ball_status,
-         'ball_contact': ball_contact})
+    {'frameID': frameID,
+     'team': team,
+     'target_id': target_id,
+     'jersey_no': jersey_no,
+     'x': x,
+     'y': y,
+     'z': z,
+     'ball_owning_team': ball_owning_team,
+     'ball_status': ball_status,
+     'ball_contact': ball_contact})
 
     tdat["frameID"] = pd.to_numeric(tdat["frameID"])
     tdat["team"] = pd.to_numeric(tdat["team"])
@@ -485,9 +486,9 @@ def parse_tracab(tracking_filename,
 
         for i in gamexml.iter('period'):
                 # get the info from the ball node main chunk
-            #         print(int(i.get('iId')))
-            info_raw.append(i.get('iStartFrame'))
-            info_raw.append(i.get('iEndFrame'))
+        #         print(int(i.get('iId')))
+                info_raw.append( i.get('iStartFrame') )
+                info_raw.append( i.get('iEndFrame') )
 
         # # Create empty dict Capitals
         game_info = dict()
@@ -502,6 +503,7 @@ def parse_tracab(tracking_filename,
         game_info['period4_start'] = int(info_raw[6])
         game_info['period4_end'] = int(info_raw[7])
 
+
         for detail in root.iter('match'):
             game_info['pitch_x'] = int(float(detail.get('fPitchXSizeMeters')))
             game_info['pitch_y'] = int(float(detail.get('fPitchYSizeMeters')))
@@ -510,16 +512,13 @@ def parse_tracab(tracking_filename,
 
         frames_to_include = []
 
-        frames_to_include.append(
-            list(range(game_info['period1_start'], game_info['period1_end'] + 1)))
-        frames_to_include.append(
-            list(range(game_info['period2_start'], game_info['period2_end'] + 1)))
+        frames_to_include.append(list(range(game_info['period1_start'], game_info['period1_end']+1)))
+        frames_to_include.append(list(range(game_info['period2_start'], game_info['period2_end']+1)))
+
 
         if game_info['period3_start'] != 0:
-            frames_to_include.append(
-                list(range(game_info['period3_start'], game_info['period3_end'] + 1)))
-            frames_to_include.append(
-                list(range(game_info['period4_start'], game_info['period4_end'] + 1)))
+            frames_to_include.append(list(range(game_info['period3_start'], game_info['period3_end']+1)))
+            frames_to_include.append(list(range(game_info['period4_start'], game_info['period4_end']+1)))
 
         flat_list = []
 
@@ -549,9 +548,9 @@ def parse_tracking_metadata(filename):
 
     for i in gamexml.iter('period'):
             # get the info from the ball node main chunk
-        #         print(int(i.get('iId')))
-        info_raw.append(i.get('iStartFrame'))
-        info_raw.append(i.get('iEndFrame'))
+    #         print(int(i.get('iId')))
+            info_raw.append( i.get('iStartFrame') )
+            info_raw.append( i.get('iEndFrame') )
 
     # # Create empty dict Capitals
     game_info = dict()
@@ -565,6 +564,7 @@ def parse_tracking_metadata(filename):
     game_info['period3_end'] = int(info_raw[5])
     game_info['period4_start'] = int(info_raw[6])
     game_info['period4_end'] = int(info_raw[7])
+
 
     for detail in root.iter('match'):
         game_info['pitch_x'] = int(float(detail.get('fPitchXSizeMeters')))
