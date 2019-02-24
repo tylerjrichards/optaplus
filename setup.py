@@ -8,11 +8,10 @@ HERE = pathlib.Path(__file__).parent
 README = (HERE / "README.md")
 
 setup(name='optaplus',
-      version='0.11',
+      version='1.0',
       description='Optaplus package is a range of functions to act as helping hands for people working with Opta and Tracab data.',
       author='Joe Mulberry, Tyler Richards',
       author_email='tylerjrichards@gmail.com',
-      # The directory containing this file
       long_description=README,
       long_description_content_type="text/markdown",
       url="https://github.com/tylerjrichards/optaplus",
